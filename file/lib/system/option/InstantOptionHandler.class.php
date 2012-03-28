@@ -22,6 +22,11 @@ class InstantOptionHandler extends \wcf\system\SingletonFactory {
 	 */
 	public function registerOptions(array $options) {
 		$this->options = array_merge($this->options, $options);
+		
+		foreach ($options as $option) {
+			if ($option->defaultValue)
+				$this->values[$option->optionName] = $option->defaultValue;
+		}
 	}
 	
 	/**

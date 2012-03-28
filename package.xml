@@ -4,8 +4,8 @@
 		<packagename><![CDATA[Instant Options]]></packagename>
 		<packagedescription><![CDATA[]]></packagedescription>
 		<isunique>1</isunique>
-		<version>1.0.0 Alpha 1</version>
-		<date>2012-03-26</date>
+		<version>1.0.0 Alpha 2</version>
+		<date>2012-03-28</date>
 	</packageinformation>
 	
 	<authorinformation>
@@ -18,6 +18,10 @@
 	</requiredpackages>
 	
 	<instructions type="install">
+		<instruction type="file">file.tar</instruction>
+	</instructions>
+	
+	<instructions type="update" fromversion="1.0.0 Alpha *">
 		<instruction type="file">file.tar</instruction>
 	</instructions>
 </package>
