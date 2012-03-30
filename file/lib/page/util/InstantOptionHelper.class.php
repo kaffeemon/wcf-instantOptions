@@ -53,7 +53,7 @@ class InstantOptionHelper {
 	/**
 	 * Validates user input.
 	 */
-	public function validate() {
+	public function validate($callback = null) {
 		foreach ($this->options as $option) {
 			try {
 				if ($option->validationPattern) {
@@ -67,8 +67,16 @@ class InstantOptionHelper {
 			}
 		}
 		
+		if (is_callable($callback)) {
+			try {
+				$callback($this->options);
+			catch (\wcf\system\exception\UserInputException $e) {
+				$this->errors = array_merge($this->errors, $e->getType());
+			}
+		}
+		
 		if (count($this->errors))
-			throw new \wcf\system\exception\UserException('options', $this->errors);
+			throw new \wcf\system\exception\UserInputException($this->name, $this->errors);
 	}
 	
 	/**
