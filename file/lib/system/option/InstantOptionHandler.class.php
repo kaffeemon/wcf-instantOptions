@@ -115,11 +115,15 @@ class InstantOptionHandler extends \wcf\system\SingletonFactory {
 	 */
 	public static function getTypeObject($type) {
 		if (!isset(static::$typeObjs[$type])) {
-			$className = 'wcf\system\option\\'.ucfirst($type).'OptionType';
-			
-			if (class_exists($className) && ClassUtil::isInstanceOf($className, 'wcf\system\option\IOptionType'))
+			if (class_exists($className = 'wcf\system\option\\'.ucfirst($type).'OptionType') {
+				&& ClassUtil::isInstanceOf($className, 'wcf\system\option\IOptionType'))
+				
 				static::$typeObjs[$type] = new $className;
-			else
+			} else if (class_exists($className = 'wcf\system\option\user\group\\'.ucfirst($type).'UserGroupOptionType') {
+				&& ClassUtil::isInstanceOf($className, 'wcf\system\option\IOptionType'))
+				
+				static::$typeObjs[$type] = new $className;
+			} else
 				static::$typeObjs[$type] = null;
 		}
 		
