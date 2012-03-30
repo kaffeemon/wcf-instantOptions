@@ -1,5 +1,5 @@
 <?php
-namespace wcf\system\option;
+namespace wcf\page\util;
 use \wcf\util\ClassUtil;
 use \wcf\system\WCF;
 
@@ -7,15 +7,23 @@ use \wcf\system\WCF;
  * @author		kaffeemon
  * @license		GNU Lesser General Public License <http://opensource.org/licenses/lgpl-license.php>
  * @package		com.github.kaffeemon.wcf.instantOptions
- * @subpackage	system.option
+ * @subpackage	page.util
  */
-class InstantOptionHandler extends \wcf\system\SingletonFactory {
-	protected static $typeObjs = array();
+class InstantOptionHelper {
+	public static $typeObjs = array();
 	
-	protected $enableAssignVariables = true;
-	protected $options = array();
-	protected $values = array();
-	protected $errors = array();
+	public $name = '';
+	public $langPrefix = '';
+	
+	public $enableAssignVariables = true;
+	public $options = array();
+	public $values = array();
+	public $errors = array();
+	
+	public function __construct($name, $langPrefix) {
+		$this->name = $name;
+		$this->langPrefix = $langPrefix;
+	}
 	
 	/**
 	 * Registers options.
@@ -35,8 +43,8 @@ class InstantOptionHandler extends \wcf\system\SingletonFactory {
 	public function readValues() {
 		foreach ($this->options as $option) {
 			$value = null;
-			if (isset($_POST['values']) && is_array($_POST['values']) && isset($_POST['values'][$option->optionName]))
-				$value = $_POST['values'][$option->optionName];
+			if (isset($_POST[$this->name]) && is_array($_POST[$this->name]) && isset($_POST[$this->name][$option->optionName]))
+				$value = $_POST[$this->name][$option->optionName];
 			
 			$this->values[$option->optionName] = static::getTypeObject($option->optionType)->getData($option, $value);
 		}
@@ -78,28 +86,31 @@ class InstantOptionHandler extends \wcf\system\SingletonFactory {
 	}
 	
 	/**
-	 * Assigns option values and errors to template.
+	 * Returns the template.
 	 */
-	public function assignVariables() {
-		if (!$this->enableAssignVariables) return;
-		
+	public function render() {
 		$options = array();
+		$errors = array();
 		
-		foreach ($this->options as $option) {
-			$optionValue = null;
-			if (isset($this->values[$option->optionName]))
-				$optionValue = $this->values[$option->optionName];
+		if ($this->enableAssignVariables) {
+			foreach ($this->options as $option) {
+				$optionValue = null;
+				if (isset($this->values[$option->optionName]))
+					$optionValue = $this->values[$option->optionName];
 			
-			$options[] = array(
-				'object' => $option,
-				'html' => static::getTypeObject($option->optionType)->getFormElement($option, $optionValue),
-				'cssClassName' => static::getTypeObject($option->optionType)->getCSSClassName()
-			);
+				$options[] = array(
+					'object' => $option,
+					'html' => static::getTypeObject($option->optionType)->getFormElement($option, $optionValue),
+					'cssClassName' => static::getTypeObject($option->optionType)->getCSSClassName(),
+					'error' => (isset($this->errors[$option->optionName]) ? $this->errors[$option->optionName] : '')
+				);
+			}
 		}
 		
-		WCF::getTPL()->assign(array(
-			'options' => $options,
-			'errorType' => $this->errors
+		return WCF::getTPL()->fetch('instantOptions', array(
+			'name' => $this->name,
+			'langPrefix' => $this->langPrefix,
+			'options' => $options
 		));
 	}
 	
