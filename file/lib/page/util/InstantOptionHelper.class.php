@@ -43,8 +43,8 @@ class InstantOptionHelper {
 	public function readValues() {
 		foreach ($this->options as $option) {
 			$value = null;
-			if (isset($_POST[$this->name]) && is_array($_POST[$this->name]) && isset($_POST[$this->name][$option->optionName]))
-				$value = $_POST[$this->name][$option->optionName];
+			if (isset($_POST['values']) && is_array($_POST['values']) && isset($_POST['values'][$this->name]) && is_array($_POST['values'][$this->name]) && isset($_POST['values'][$this->name][$option->optionName]))
+				$value = $_POST['values'][$this->name][$option->optionName];
 			
 			$this->values[$option->optionName] = static::getTypeObject($option->optionType)->getData($option, $value);
 		}
@@ -69,8 +69,8 @@ class InstantOptionHelper {
 		
 		if (is_callable($callback)) {
 			try {
-				$callback($this->options);
-			catch (\wcf\system\exception\UserInputException $e) {
+				call_user_func($callback, $this->options);
+			} catch (\wcf\system\exception\UserInputException $e) {
 				$this->errors = array_merge($this->errors, $e->getType());
 			}
 		}
@@ -105,10 +105,17 @@ class InstantOptionHelper {
 				$optionValue = null;
 				if (isset($this->values[$option->optionName]))
 					$optionValue = $this->values[$option->optionName];
-			
+				
+				// workaround
+				$optionName = $option->optionName;
+				$option->optionName = $this->name.']['.$optionName;
+				$html = static::getTypeObject($option->optionType)->getFormElement($option, $optionValue);
+				$option->optionName = $optionName;
+				
 				$options[] = array(
 					'object' => $option,
-					'html' => static::getTypeObject($option->optionType)->getFormElement($option, $optionValue),
+					//'html' => static::getTypeObject($option->optionType)->getFormElement($option, $optionValue),
+					'html' => $html,
 					'cssClassName' => static::getTypeObject($option->optionType)->getCSSClassName(),
 					'error' => (isset($this->errors[$option->optionName]) ? $this->errors[$option->optionName] : '')
 				);
@@ -134,16 +141,17 @@ class InstantOptionHelper {
 	 */
 	public static function getTypeObject($type) {
 		if (!isset(static::$typeObjs[$type])) {
-			if (class_exists($className = 'wcf\system\option\\'.ucfirst($type).'OptionType') {
-				&& ClassUtil::isInstanceOf($className, 'wcf\system\option\IOptionType'))
+			if (class_exists($className = 'wcf\system\option\\'.ucfirst($type).'OptionType')
+				&& ClassUtil::isInstanceOf($className, 'wcf\system\option\IOptionType')) {
 				
 				static::$typeObjs[$type] = new $className;
-			} else if (class_exists($className = 'wcf\system\option\user\group\\'.ucfirst($type).'UserGroupOptionType') {
-				&& ClassUtil::isInstanceOf($className, 'wcf\system\option\IOptionType'))
+			} else if (class_exists($className = 'wcf\system\option\user\group\\'.ucfirst($type).'UserGroupOptionType')
+				&& ClassUtil::isInstanceOf($className, 'wcf\system\option\IOptionType')) {
 				
 				static::$typeObjs[$type] = new $className;
-			} else
+			} else {
 				static::$typeObjs[$type] = null;
+			}
 		}
 		
 		return static::$typeObjs[$type];
