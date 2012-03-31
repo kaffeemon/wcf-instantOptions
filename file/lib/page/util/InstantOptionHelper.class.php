@@ -69,7 +69,7 @@ class InstantOptionHelper {
 		
 		if (is_callable($callback)) {
 			try {
-				call_user_func($callback, $this->options);
+				call_user_func($callback, $this->values);
 			} catch (\wcf\system\exception\UserInputException $e) {
 				$this->errors = array_merge($this->errors, $e->getType());
 			}
